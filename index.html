@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>赛博眼镜</title>
+    <script type="text/javascript">
+
+    </script>
+</head>
+<body>
+	<!DOCTYPE html>
+	<html lang="zh-CN">
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+	<title>CYBER LENS // 2077</title>
+	<style>
+	:root{
+	  --yellow:#fcee0a;
+	  --cyan:#00f0ff;
+	  --magenta:#ff003c;
+	  --bg:#050506;
+	}
+	*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+	html,body{
+	  width:100%;height:100%;overflow:hidden;background:var(--bg);
+	  font-family:"Consolas","Courier New",monospace;color:var(--cyan);
+	  user-select:none;
+	}
+	/* ============ 通用按钮/可点元素反馈 ============ */
+	.clickable{
+	  cursor:pointer;transition:transform .12s ease, background .2s, box-shadow .2s, border-color .2s;
+	}
+	.clickable:active{transform:scale(.94);}
+	.clickable.flash{
+	  animation:flashPulse .45s ease;
+	}
+	@keyframes flashPulse{
+	  0%{box-shadow:0 0 0 rgba(252,238,10,0);}
+	  35%{box-shadow:0 0 24px rgba(252,238,10,.9);background:rgba(252,238,10,.18);}
+	  100%{box-shadow:0 0 0 rgba(252,238,10,0);}
+	}
+	
+	/* ============ 登录页 ============ */
+	#loginPage{
+	  position:absolute;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+	  background:
+	    radial-gradient(circle at 30% 20%, rgba(252,238,10,.10), transparent 55%),
+	    radial-gradient(circle at 75% 80%, rgba(255,0,60,.12), transparent 55%),
+	    #050506;
+	  transition:opacity .5s ease, visibility .5s;
+	}
+	#loginPage.hide{opacity:0;visibility:hidden;}
+	.login-scanlines{
+	  position:absolute;inset:0;pointer-events:none;
+	  background:repeating-linear-gradient(0deg,rgba(0,240,255,.05) 0px,rgba(0,240,255,.05) 1px,transparent 1px,transparent 4px);
+	}
+	.login-box{
+	  position:relative;width:min(92vw,420px);padding:clamp(20px,5vw,40px);
+	  background:rgba(8,8,10,.85);border:2px solid var(--yellow);
+	  clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));
+	  box-shadow:0 0 40px rgba(252,238,10,.25), inset 0 0 40px rgba(252,238,10,.05);
+	}
+	.login-box::before{
+	  content:"";position:absolute;top:0;left:0;right:0;height:6px;
+	  background:repeating-linear-gradient(45deg,var(--yellow) 0 12px,#000 12px 24px);
+	  opacity:.85;
+	}
+	.login-corner{position:absolute;width:16px;height:16px;border:2px solid var(--cyan);}
+	.login-corner.tl{top:10px;left:10px;border-right:0;border-bottom:0;}
+	.login-corner.br{bottom:10px;right:10px;border-left:0;border-top:0;}
+	
+	.login-title{
+	  font-size:clamp(22px,6vw,32px);font-weight:900;letter-spacing:4px;color:var(--yellow);
+	  text-shadow:2px 0 var(--magenta),-2px 0 var(--cyan);margin-bottom:6px;
+	}
+	.login-sub{font-size:11px;letter-spacing:3px;color:var(--cyan);opacity:.7;margin-bottom:26px;}
+	
+	.login-field{margin-bottom:16px;}
+	.login-field label{display:block;font-size:10px;letter-spacing:2px;color:var(--yellow);margin-bottom:6px;}
+	.login-field input{
+	  width:100%;padding:12px 14px;font-family:inherit;font-size:14px;
+	  background:rgba(0,240,255,.05);border:1px solid rgba(0,240,255,.4);color:#fff;outline:none;
+	  transition:border-color .2s, box-shadow .2s;
+	}
+	.login-field input:focus{border-color:var(--yellow);box-shadow:0 0 16px rgba(252,238,10,.35);}
+	
+	.login-btn{
+	  width:100%;margin-top:10px;padding:14px;font-family:inherit;font-size:14px;font-weight:900;
+	  letter-spacing:4px;color:#000;background:var(--yellow);border:none;
+	  clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);
+	  cursor:pointer;transition:transform .12s, box-shadow .2s, background .2s;
+	}
+	.login-btn:hover{background:#fff83a;box-shadow:0 0 28px rgba(252,238,10,.6);}
+	.login-btn:active{transform:scale(.97);}
+	.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+	
+	.login-progress{margin-top:18px;height:4px;background:rgba(0,240,255,.15);display:none;}
+	.login-progress.show{display:block;}
+	.login-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--yellow));transition:width .1s linear;}
+	.login-msg{margin-top:12px;font-size:11px;letter-spacing:1px;color:var(--cyan);opacity:.8;min-height:16px;}
+	
+	/* ============ 主界面 ============ */
+	#mainPage{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;}
+	
+	/* 视频背景 */
+	.video-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#000;}
+	.video-bg video{width:100%;height:100%;object-fit:cover;opacity:.55;filter:saturate(1.3) contrast(1.1);}
+	.video-bg .tint{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,6,.55),rgba(5,5,6,.15) 45%,rgba(5,5,6,.75));}
+	.video-bg .grid{
+	  position:absolute;inset:0;opacity:.35;
+	  background-image:linear-gradient(rgba(0,240,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.18) 1px,transparent 1px);
+	  background-size:48px 48px;
+	  transform:perspective(600px) rotateX(52deg) scale(1.8);transform-origin:center bottom;
+	}
+	.video-bg .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.85) 100%);}
+	
+	.scanlines{position:absolute;inset:0;z-index:80;pointer-events:none;
+	  background:repeating-linear-gradient(0deg,rgba(0,240,255,.06) 0px,rgba(0,240,255,.06) 1px,transparent 1px,transparent 4px);}
+	.scan-sweep{position:absolute;left:0;right:0;height:120px;z-index:81;pointer-events:none;
+	  background:linear-gradient(to bottom,transparent,rgba(0,240,255,.18),transparent);
+	  animation:sweep 4s linear infinite;}
+	@keyframes sweep{0%{top:-15%;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:110%;opacity:0;}}
+	
+	/* 顶部栏 */
+	.hud-bar{
+	  position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;
+	  padding:clamp(8px,1.5vw,14px) clamp(12px,2.5vw,28px);
+	  background:rgba(5,5,6,.72);border-bottom:2px solid var(--yellow);
+	  backdrop-filter:blur(6px);
+	}
+	.hud-left{display:flex;align-items:center;gap:clamp(8px,1.5vw,18px);}
+	.brand{display:flex;align-items:center;gap:8px;}
+	.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 12px var(--yellow);animation:pulse 1.2s infinite;}
+	@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+	.brand .name{font-size:clamp(11px,1.4vw,15px);font-weight:900;letter-spacing:3px;color:var(--yellow);text-shadow:1px 0 var(--magenta),-1px 0 var(--cyan);}
+	.nav{display:flex;gap:clamp(4px,1vw,10px);}
+	.nav-item{
+	  padding:6px 12px;font-size:clamp(9px,1.1vw,12px);letter-spacing:2px;color:rgba(0,240,255,.7);
+	  border:1px solid rgba(0,240,255,.25);background:rgba(0,0,0,.4);
+	}
+	.nav-item.active{color:#000;background:var(--yellow);border-color:var(--yellow);font-weight:900;box-shadow:0 0 16px rgba(252,238,10,.5);}
+	.hud-right{display:flex;align-items:center;gap:clamp(8px,1.5vw,18px);font-size:clamp(9px,1.1vw,12px);}
+	.hud-right .k{color:rgba(0,240,255,.5);}
+	.hud-right .v{color:var(--yellow);font-weight:700;}
+	.clock{color:var(--magenta);font-weight:700;letter-spacing:1px;}
+	
+	/* 主区域 */
+	.main-area{position:relative;z-index:20;flex:1;display:flex;align-items:center;justify-content:space-between;padding:clamp(10px,2vw,24px);}
+	
+	/* 面板通用 */
+	.panel{
+	  position:relative;background:rgba(5,5,6,.68);border:1px solid rgba(0,240,255,.35);
+	  padding:clamp(8px,1.2vw,14px);
+	  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+	  backdrop-filter:blur(4px);
+	}
+	.panel-magenta{border-color:rgba(255,0,60,.5);}
+	.panel-title{
+	  font-size:clamp(9px,1vw,11px);letter-spacing:3px;color:var(--yellow);font-weight:900;
+	  margin-bottom:8px;padding-bottom:5px;border-bottom:1px dashed rgba(252,238,10,.35);
+	  display:flex;justify-content:space-between;
+	}
+	.panel-title .tag{color:var(--cyan);font-weight:400;}
+	.panel-left,.panel-right{
+	  width:clamp(150px,17vw,240px);display:flex;flex-direction:column;gap:clamp(8px,1.2vw,14px);z-index:25;
+	}
+	.data-row{
+	  display:flex;justify-content:space-between;padding:5px 6px;margin:2px -6px;
+	  font-size:clamp(9px,1vw,11px);border-left:2px solid transparent;
+	}
+	.data-row .dk{color:rgba(0,240,255,.55);}
+	.data-row .dv{color:var(--yellow);font-weight:700;}
+	.data-row:hover{background:rgba(0,240,255,.08);border-left-color:var(--cyan);}
+	
+	.log-line{
+	  display:block;font-size:clamp(9px,1vw,11px);color:rgba(0,240,255,.72);padding:3px 0;line-height:1.4;
+	}
+	.log-line .ok{color:#8dff3a;}
+	.log-line .warn{color:var(--magenta);}
+	.log-line .net{color:var(--cyan);}
+	
+	/* 波形 */
+	.wave-row{display:flex;align-items:flex-end;height:clamp(30px,5vw,52px);gap:2px;}
+	.wave-bar{flex:1;background:linear-gradient(to top,var(--cyan),var(--yellow));height:30%;animation:wave 1.2s ease-in-out infinite;}
+	@keyframes wave{0%,100%{height:18%;}50%{height:100%;}}
+	
+	/* 中央准星区 */
+	.center-zone{position:relative;flex:1;height:100%;display:flex;align-items:center;justify-content:center;}
+	.reticle-wrap{
+	  position:relative;width:clamp(180px,30vw,340px);height:clamp(180px,30vw,340px);
+	  display:flex;align-items:center;justify-content:center;cursor:pointer;
+	}
+	.reticle-wrap:active{transform:scale(.96);}
+	.reticle-outer{
+	  position:absolute;inset:0;border-radius:50%;border:2px solid rgba(0,240,255,.4);
+	  box-shadow:0 0 40px rgba(0,240,255,.25),inset 0 0 40px rgba(0,240,255,.12);
+	  animation:spin 9s linear infinite;
+	}
+	@keyframes spin{to{transform:rotate(360deg);}}
+	.reticle-outer.paused{animation-play-state:paused;}
+	.reticle-outer.locked{border-color:var(--magenta);box-shadow:0 0 50px rgba(255,0,60,.5),inset 0 0 40px rgba(255,0,60,.2);}
+	.reticle-ring2{
+	  position:absolute;inset:12%;border-radius:50%;border:1px dashed rgba(252,238,10,.5);
+	  animation:spinR 14s linear infinite;
+	}
+	.reticle-ring2.paused{animation-play-state:paused;}
+	@keyframes spinR{to{transform:rotate(-360deg);}}
+	.reticle-corner{position:absolute;width:clamp(18px,3vw,30px);height:clamp(18px,3vw,30px);border:2px solid var(--yellow);}
+	.reticle-corner.tl{top:0;left:0;border-right:0;border-bottom:0;}
+	.reticle-corner.tr{top:0;right:0;border-left:0;border-bottom:0;}
+	.reticle-corner.bl{bottom:0;left:0;border-right:0;border-top:0;}
+	.reticle-corner.br{bottom:0;right:0;border-left:0;border-top:0;}
+	.reticle-dot{width:8px;height:8px;border-radius:50%;background:var(--magenta);box-shadow:0 0 20px var(--magenta);}
+	.reticle-label{
+	  position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);
+	  font-size:clamp(9px,1vw,11px);letter-spacing:3px;color:var(--yellow);white-space:nowrap;
+	}
+	.pulse-ring{
+	  position:absolute;inset:0;border-radius:50%;border:2px solid var(--yellow);
+	  opacity:0;pointer-events:none;
+	}
+	.pulse-ring.fire{animation:pulseRing .8s ease-out;}
+	@keyframes pulseRing{0%{opacity:.9;transform:scale(.9);}100%{opacity:0;transform:scale(1.6);}}
+	
+	/* 目标卡片 */
+	.target-card{
+	  position:absolute;top:8%;right:2%;z-index:26;
+	  width:clamp(130px,15vw,190px);padding:8px;
+	  background:rgba(255,0,60,.08);border:1px solid rgba(255,0,60,.5);
+	  font-size:clamp(9px,.95vw,11px);
+	}
+	.target-card .tc-title{color:var(--magenta);font-weight:900;letter-spacing:2px;margin-bottom:4px;}
+	.target-card .tc-row{color:rgba(0,240,255,.75);padding:2px 0;}
+	.target-card .tc-row b{color:var(--yellow);}
+	
+	/* 底部按钮 */
+	.btn-row{
+	  position:relative;z-index:20;display:flex;justify-content:center;gap:clamp(8px,2vw,16px);
+	  padding:clamp(8px,1.5vw,16px);background:rgba(5,5,6,.6);border-top:1px solid rgba(0,240,255,.25);
+	}
+	.btn{
+	  padding:clamp(8px,1.2vw,12px) clamp(16px,3vw,32px);
+	  font-family:inherit;font-size:clamp(10px,1.1vw,13px);font-weight:900;letter-spacing:3px;border:none;cursor:pointer;
+	  transition:transform .12s, box-shadow .2s, background .2s;
+	}
+	.btn:active{transform:scale(.94);}
+	.btn-outline{
+	  color:var(--cyan);background:rgba(0,0,0,.6);border:2px solid var(--cyan);
+	  clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);
+	}
+	.btn-outline:hover{box-shadow:0 0 22px rgba(0,240,255,.5);}
+	.btn-solid{
+	  color:#000;background:var(--yellow);
+	  clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px);
+	}
+	.btn-solid:hover{box-shadow:0 0 26px rgba(252,238,10,.7);background:#fff83a;}
+	.btn-magenta{
+	  color:#fff;background:var(--magenta);
+	  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+	}
+	.btn-magenta:hover{box-shadow:0 0 26px rgba(255,0,60,.7);}
+	.btn-magenta.active{background:#ff2f62;box-shadow:0 0 30px rgba(255,0,60,.9);}
+	
+	/* 右下角反馈日志 */
+	.feedback-log{
+	  position:absolute;bottom:70px;right:12px;z-index:30;width:clamp(180px,26vw,300px);
+	  max-height:140px;overflow:hidden;pointer-events:none;
+	  display:flex;flex-direction:column;justify-content:flex-end;gap:2px;
+	}
+	.feedback-line{
+	  font-size:clamp(9px,.95vw,11px);color:var(--yellow);text-align:right;
+	  text-shadow:0 0 8px rgba(252,238,10,.6);animation:fbIn .3s ease;
+	}
+	.feedback-line .ts{color:rgba(0,240,255,.55);margin-right:6px;}
+	@keyframes fbIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+	
+	/* glitch 文字 */
+	.glitch{position:relative;display:inline-block;}
+	.glitch::before,.glitch::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;overflow:hidden;}
+	.glitch::before{color:var(--cyan);clip-path:inset(0 0 60% 0);animation:g1 2s infinite linear alternate-reverse;}
+	.glitch::after{color:var(--magenta);clip-path:inset(60% 0 0 0);animation:g2 1.6s infinite linear alternate-reverse;}
+	@keyframes g1{0%,100%{transform:translate(0);}20%{transform:translate(-2px,-1px);}40%{transform:translate(2px,1px);}60%{transform:translate(-1px,1px);}80%{transform:translate(1px,-1px);}}
+	@keyframes g2{0%,100%{transform:translate(0);}25%{transform:translate(2px,1px);}50%{transform:translate(-2px,-1px);}75%{transform:translate(1px,1px);}}
+	
+	/* ============ 移动端适配 ============ */
+	@media (max-width: 820px){
+	  .panel-left,.panel-right{width:clamp(110px,30vw,150px);}
+	  .main-area{padding:8px;gap:4px;}
+	  .target-card{top:6%;right:2%;width:clamp(110px,30vw,150px);}
+	  .feedback-log{bottom:64px;right:8px;width:clamp(140px,50vw,220px);}
+	  .nav{gap:2px;}
+	  .nav-item{padding:5px 7px;letter-spacing:1px;}
+	}
+	@media (max-width: 560px){
+	  .hud-bar{padding:6px 10px;}
+	  .brand .name{letter-spacing:1px;}
+	  .hud-right .hide-sm{display:none;}
+	  .main-area{flex-direction:column;justify-content:center;gap:8px;}
+	  .panel-left,.panel-right{
+	    width:100%;flex-direction:row;justify-content:space-between;
+	  }
+	  .panel-left{order:2;}
+	  .panel-right{order:3;}
+	  .panel-left .panel,.panel-right .panel{flex:1;margin:0 2px;}
+	  .center-zone{order:1;flex:none;height:auto;padding:6px 0;}
+	  .reticle-wrap{width:clamp(160px,55vw,220px);height:clamp(160px,55vw,220px);}
+	  .target-card{position:relative;top:auto;right:auto;width:100%;order:4;margin-top:6px;}
+	  .feedback-log{position:relative;bottom:auto;right:auto;width:100%;order:5;max-height:70px;margin-top:4px;}
+	  .feedback-line{text-align:left;}
+	  .wave-row{height:26px;}
+	  .btn-row{padding:8px 6px;gap:6px;}
+	  .btn{padding:9px 12px;letter-spacing:1px;font-size:10px;}
+	}
+	
+	/* 视频 */
+	/* ===== 视频兜底动态背景 ===== */
+	.fallback-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#050506;}
+	.fb-grid{
+	  position:absolute;inset:-20%;
+	  background-image:
+	    linear-gradient(rgba(0,240,255,.22) 1px,transparent 1px),
+	    linear-gradient(90deg,rgba(0,240,255,.22) 1px,transparent 1px);
+	  background-size:56px 56px;
+	  transform:perspective(600px) rotateX(55deg) scale(1.8);
+	  transform-origin:center bottom;
+	  animation:fbGridMove 6s linear infinite;
+	}
+	@keyframes fbGridMove{from{background-position:0 0;}to{background-position:0 56px;}}
+	.fb-glow{position:absolute;border-radius:50%;filter:blur(120px);opacity:.45;}
+	.fb-glow-a{width:60vw;height:60vw;left:-15vw;top:-15vw;background:var(--cyan);animation:fbFloatA 9s ease-in-out infinite alternate;}
+	.fb-glow-b{width:55vw;height:55vw;right:-12vw;bottom:-15vw;background:var(--magenta);animation:fbFloatB 11s ease-in-out infinite alternate;}
+	@keyframes fbFloatA{from{transform:translate(0,0);}to{transform:translate(6vw,4vw);}}
+	@keyframes fbFloatB{from{transform:translate(0,0);}to{transform:translate(-5vw,-4vw);}}
+	.fb-scan{
+	  position:absolute;left:0;right:0;height:2px;
+	  background:linear-gradient(90deg,transparent,var(--cyan),var(--yellow),var(--cyan),transparent);
+	  box-shadow:0 0 24px var(--cyan);
+	  animation:fbScan 3.5s linear infinite;opacity:.75;
+	}
+	@keyframes fbScan{0%{top:-5%;opacity:0;}10%{opacity:.9;}90%{opacity:.9;}100%{top:105%;opacity:0;}}
+	
+	/* 视频真正播放后才隐藏兜底，避免黑屏 */
+	.video-bg video{position:relative;z-index:1;}
+	.video-bg video.playing ~ .fallback-bg{opacity:0;transition:opacity .6s;}
+	</style>
+	</head>
+	<body>
+	
+	<!-- ================= 登录页 ================= -->
+	<div id="loginPage">
+	  <div class="login-scanlines"></div>
+	  <div class="login-box">
+	    <div class="login-corner tl"></div>
+	    <div class="login-corner br"></div>
+	    <div class="login-title glitch" data-text="CYBER LENS">CYBER LENS</div>
+	    <div class="login-sub">// NEURAL ACCESS TERMINAL v2.6.77</div>
+	
+	    <div class="login-field">
+	      <label>USER / 神经用户名</label>
+	      <input id="username" type="text" placeholder="输入任意用户名" autocomplete="off">
+	    </div>
+	    <div class="login-field">
+	      <label>PASS / 访问密钥</label>
+	      <input id="password" type="password" placeholder="输入任意密码">
+	    </div>
+	
+	    <button class="login-btn" id="loginBtn">▶ 连接神经链路</button>
+	
+	    <div class="login-progress" id="loginProgress">
+	      <div class="login-progress-fill" id="loginProgressFill"></div>
+	    </div>
+	    <div class="login-msg" id="loginMsg"></div>
+	  </div>
+	</div>
+	
+	<!-- ================= 主界面 ================= -->
+	<div id="mainPage">
+	  <!-- 视频背景 -->
+<div class="video-bg">
+  <!-- 动态赛博网格兜底背景（视频加载失败时显示） -->
+  <div class="fallback-bg" id="fallbackBg">
+    <div class="fb-grid"></div>
+    <div class="fb-glow fb-glow-a"></div>
+    <div class="fb-glow fb-glow-b"></div>
+    <div class="fb-scan"></div>
+  </div>
+
+  <!-- 视频（优先本地 static/bg.mp4，其次在线地址） -->
+  <video id="bgVideo" autoplay muted loop playsinline preload="auto"
+    poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'><rect width='16' height='9' fill='%23050506'/></svg>">
+    <source src="static/bg.mp4" type="video/mp4">
+    <source src="https://cdn.pixabay.com/video/2023/10/22/186115-877653483_large.mp4" type="video/mp4">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-a-city-at-night-32089-large.mp4" type="video/mp4">
+  </video>
+
+  <div class="tint"></div>
+  <div class="grid"></div>
+  <div class="vignette"></div>
+</div>
+	
+	  <!-- 扫描线 -->
+	  <div class="scanlines"></div>
+	  <div class="scan-sweep"></div>
+	
+	  <!-- 顶部栏 -->
+	  <div class="hud-bar">
+	    <div class="hud-left">
+	      <div class="brand">
+	        <div class="dot"></div>
+	        <div class="name">CYBER·LENS</div>
+	      </div>
+	      <div class="nav" id="nav">
+	        <div class="nav-item active clickable" data-nav="HOME">HOME</div>
+	        <div class="nav-item clickable" data-nav="MAP">MAP</div>
+	        <div class="nav-item clickable" data-nav="DATA">DATA</div>
+	        <div class="nav-item clickable" data-nav="SET">SET</div>
+	      </div>
+	    </div>
+	    <div class="hud-right">
+	      <span class="hide-sm"><span class="k">LINK:</span> <span class="v">STABLE</span></span>
+	      <span class="hide-sm"><span class="k">BAT:</span> <span class="v">87%</span></span>
+	      <span class="clock" id="clock">00:00:00</span>
+	    </div>
+	  </div>
+	
+	  <!-- 主区域 -->
+	  <div class="main-area">
+	    <!-- 左面板 -->
+	    <div class="panel-left">
+	      <div class="panel">
+	        <div class="panel-title">// TELEMETRY <span class="tag">LIVE</span></div>
+	        <div class="data-row clickable" data-info="神经同步率已刷新"><span class="dk">NEURAL SYNC</span><span class="dv">76%</span></div>
+	        <div class="data-row clickable" data-info="光学测距范围 1200m"><span class="dk">OPTIC RANGE</span><span class="dv">1200m</span></div>
+	        <div class="data-row clickable" data-info="目标锁定状态查询"><span class="dk">TARGET LOCK</span><span class="dv">ACTIVE</span></div>
+	        <div class="data-row clickable" data-info="加密协议 AES-512"><span class="dk">ENCRYPTION</span><span class="dv">AES-512</span></div>
+	        <div class="data-row clickable" data-info="体温传感器读数正常"><span class="dk">THERMAL</span><span class="dv">36.6°C</span></div>
+	      </div>
+	      <div class="panel panel-magenta">
+	        <div class="panel-title" style="color:var(--magenta);border-color:rgba(255,0,60,.4)">// SIGNAL</div>
+	        <div class="wave-row" id="waveRow"></div>
+	      </div>
+	    </div>
+	
+	    <!-- 中央准星 -->
+	    <div class="center-zone">
+	      <div class="reticle-wrap clickable" id="reticleWrap">
+	        <div class="pulse-ring" id="pulseRing"></div>
+	        <div class="reticle-outer" id="reticleOuter"></div>
+	        <div class="reticle-ring2" id="reticleRing2"></div>
+	        <div class="reticle-corner tl"></div>
+	        <div class="reticle-corner tr"></div>
+	        <div class="reticle-corner bl"></div>
+	        <div class="reticle-corner br"></div>
+	        <div class="reticle-dot"></div>
+	        <div class="reticle-label" id="reticleLabel">● SCANNING</div>
+	      </div>
+	    </div>
+	
+	    <!-- 右面板 -->
+	    <div class="panel-right">
+	      <div class="panel">
+	        <div class="panel-title">// SYSTEM LOG</div>
+	        <span class="log-line"><span class="ok">[OK]</span> lens.calibrated</span>
+	        <span class="log-line"><span class="ok">[OK]</span> ar.overlay.mounted</span>
+	        <span class="log-line"><span class="warn">[WARN]</span> eye.tracking drift</span>
+	        <span class="log-line"><span class="ok">[OK]</span> bio.link.encrypted</span>
+	        <span class="log-line"><span class="net">[NET]</span> node-07 synced</span>
+	      </div>
+	      <div class="panel">
+	        <div class="panel-title">// TARGET</div>
+	        <span class="log-line">ID: <span class="ok">C-7734</span></span>
+	        <span class="log-line">CLASS: <span class="net">UNKNOWN</span></span>
+	        <span class="log-line">DIST: <span class="ok">42.6 m</span></span>
+	      </div>
+	    </div>
+	
+	    <!-- 目标卡片 -->
+	    <div class="target-card clickable" data-info="已选中目标 C-7734">
+	      <div class="tc-title">◤ TARGET ACQUIRED</div>
+	      <div class="tc-row">NAME: <b>C-7734</b></div>
+	      <div class="tc-row">THREAT: <b>LOW</b></div>
+	      <div class="tc-row">DIST: <b>42.6 m</b></div>
+	    </div>
+	
+	    <!-- 反馈日志 -->
+	    <div class="feedback-log" id="feedbackLog"></div>
+	  </div>
+	
+	  <!-- 底部按钮 -->
+	  <div class="btn-row">
+	    <button class="btn btn-outline" id="scanBtn">◼ STOP SCAN</button>
+	    <button class="btn btn-solid" id="activateBtn">⚡ ACTIVATE</button>
+	    <button class="btn btn-magenta" id="lockBtn">◎ LOCK</button>
+	  </div>
+	</div>
+	
+	<script>
+	(function(){
+	  var $ = function(id){ return document.getElementById(id); };
+	
+	  /* ========= 反馈日志 ========= */
+	  var feedbackLog = $('feedbackLog');
+	  function nowStr(){
+	    var d = new Date();
+	    var p = function(n){ return n < 10 ? '0' + n : '' + n; };
+	    return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+	  }
+	  function pushFeedback(msg){
+	    if (!feedbackLog) return;
+	    var line = document.createElement('div');
+	    line.className = 'feedback-line';
+	    line.innerHTML = '<span class="ts">[' + nowStr() + ']</span>' + msg;
+	    feedbackLog.appendChild(line);
+	    while (feedbackLog.children.length > 8) {
+	      feedbackLog.removeChild(feedbackLog.firstChild);
+	    }
+	  }
+	
+	  /* ========= 登录逻辑 ========= */
+	  var loginPage = $('loginPage');
+	  var loginBtn = $('loginBtn');
+	  var loginMsg = $('loginMsg');
+	  var loginProgress = $('loginProgress');
+	  var loginProgressFill = $('loginProgressFill');
+	
+	  if (sessionStorage.getItem('cyber_logged') === '1') {
+	    loginPage.classList.add('hide');
+	  }
+	
+	  loginBtn.addEventListener('click', function(){
+	    var userInput = $('username');
+	    var user = (userInput && userInput.value.trim()) || 'ANONYMOUS';
+	    loginBtn.disabled = true;
+	    loginProgress.classList.add('show');
+	    loginMsg.textContent = '> 正在验证神经签名...';
+	
+	    var p = 0;
+	    var t = setInterval(function(){
+	      p += 12;
+	      loginProgressFill.style.width = Math.min(p, 100) + '%';
+	      if (p >= 36) loginMsg.textContent = '> 签名匹配，建立链路...';
+	      if (p >= 72) loginMsg.textContent = '> 授权通过，载入 HUD...';
+	      if (p >= 100) {
+	        clearInterval(t);
+	        loginMsg.textContent = '> 欢迎回来，' + user;
+	        sessionStorage.setItem('cyber_logged', '1');
+	        sessionStorage.setItem('cyber_user', user);
+	        setTimeout(function(){
+	          loginPage.classList.add('hide');
+	          pushFeedback('用户 ' + user + ' 已登录');
+	        }, 450);
+	      }
+	    }, 90);
+	  });
+	
+	  /* ========= 时钟 ========= */
+	  var clockEl = $('clock');
+	  function updateClock(){
+	    if (clockEl) clockEl.textContent = nowStr();
+	  }
+	  updateClock();
+	  setInterval(updateClock, 1000);
+	
+	  /* ========= 波形条 ========= */
+	  var waveRow = $('waveRow');
+	  if (waveRow) {
+	    for (var i = 0; i < 16; i++) {
+	      var bar = document.createElement('div');
+	      bar.className = 'wave-bar';
+	      bar.style.animationDelay = (i * 0.07) + 's';
+	      waveRow.appendChild(bar);
+	    }
+	  }
+	
+	  /* ========= 扫描 / 锁定 / 激活 ========= */
+	  var scanning = true;
+	  var locked = false;
+	  var scanBtn = $('scanBtn');
+	  var lockBtn = $('lockBtn');
+	  var activateBtn = $('activateBtn');
+	  var reticleOuter = $('reticleOuter');
+	  var reticleRing2 = $('reticleRing2');
+	  var reticleLabel = $('reticleLabel');
+	
+	  function applyReticle(){
+	    if (!reticleOuter) return;
+	    reticleOuter.classList.toggle('paused', !scanning);
+	    if (reticleRing2) reticleRing2.classList.toggle('paused', !scanning);
+	    reticleOuter.classList.toggle('locked', locked);
+	    if (reticleLabel) {
+	      reticleLabel.textContent = locked ? '◎ TARGET LOCKED' : (scanning ? '● SCANNING' : '◼ SCAN PAUSED');
+	      reticleLabel.style.color = locked ? '#ff003c' : '#fcee0a';
+	    }
+	  }
+	  applyReticle();
+	
+	  if (scanBtn) {
+	    scanBtn.addEventListener('click', function(){
+	      scanning = !scanning;
+	      scanBtn.textContent = scanning ? '◼ STOP SCAN' : '▶ START SCAN';
+	      applyReticle();
+	      pushFeedback(scanning ? '扫描已启动' : '扫描已暂停');
+	    });
+	  }
+	
+	  if (lockBtn) {
+	    lockBtn.addEventListener('click', function(){
+	      locked = !locked;
+	      lockBtn.classList.toggle('active', locked);
+	      applyReticle();
+	      pushFeedback(locked ? '[OK] 已锁定目标 C-7734' : '已解除目标锁定');
+	    });
+	  }
+	
+	  if (activateBtn) {
+	    activateBtn.addEventListener('click', function(){
+	      pushFeedback('[NET] 激活指令已发送，正在同步 node-07...');
+	    });
+	  }
+	
+	  /* ========= 准星点击脉冲 ========= */
+	  var reticleWrap = $('reticleWrap');
+	  var pulseRing = $('pulseRing');
+	  if (reticleWrap && pulseRing) {
+	    reticleWrap.addEventListener('click', function(){
+	      pulseRing.classList.remove('fire');
+	      void pulseRing.offsetWidth;
+	      pulseRing.classList.add('fire');
+	      pushFeedback('[SCAN] 脉冲扫描完成，无异常');
+	    });
+	  }
+	
+	  /* ========= 顶部导航 ========= */
+	  var nav = $('nav');
+	  if (nav) {
+	    nav.addEventListener('click', function(e){
+	      var item = e.target.closest('.nav-item');
+	      if (!item) return;
+	      var items = nav.querySelectorAll('.nav-item');
+	      for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+	      item.classList.add('active');
+	      pushFeedback('切换模块: ' + item.getAttribute('data-nav'));
+	    });
+	  }
+	
+	  /* ========= 可点元素通用反馈 ========= */
+	  document.querySelectorAll('.clickable').forEach(function(el){
+	    el.addEventListener('click', function(){
+	      el.classList.remove('flash');
+	      void el.offsetWidth;
+	      el.classList.add('flash');
+	      var info = el.getAttribute('data-info');
+	      if (info) pushFeedback(info);
+	    });
+	  });
+	  
+	  /* ========= 视频兜底检测 ========= */
+	  var bgVideo = $('bgVideo');
+	  var fallbackBg = $('fallbackBg');
+	  if (bgVideo) {
+	    var markPlaying = function(){
+	      bgVideo.classList.add('playing');
+	      if (fallbackBg) fallbackBg.style.opacity = '0';
+	    };
+	    bgVideo.addEventListener('playing', markPlaying);
+	    bgVideo.addEventListener('canplay', function(){
+	      // 能播就尝试播放（部分 WebView 需要手动触发）
+	      var p = bgVideo.play();
+	      if (p && p.catch) p.catch(function(){ /* 自动播放被拦，交给兜底 */ });
+	    });
+	    bgVideo.addEventListener('error', function(){
+	      // 所有 source 都失败，保持兜底背景
+	      if (fallbackBg) fallbackBg.style.opacity = '1';
+	      pushFeedback('[WARN] 视频源不可用，已切换动态背景');
+	    });
+	    // 5 秒后仍未播放，则认为视频不可用，维持兜底
+	    setTimeout(function(){
+	      if (bgVideo.readyState < 2) {
+	        pushFeedback('[WARN] 视频加载超时，使用动态背景');
+	      }
+	    }, 5000);
+	  }
+	
+	  /* ========= 5+App ready（保留原生调用入口） ========= */
+	  document.addEventListener('plusready', function(){
+	    // 如需调用 plus API 在此写
+	  });
+	})();
+	</script>
+</body>
+</html>
